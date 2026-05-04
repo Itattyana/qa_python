@@ -1,4 +1,5 @@
 from main import BooksCollector
+import pytest
 
 
 class TestBooksCollector:
@@ -53,23 +54,46 @@ class TestBooksCollector:
         collector.set_book_genre('Шерлок Холмс', 'Детективы')
         assert collector.get_books_with_specific_genre('Фантастика') == ['Гарри Поттер']
 
-    def test_get_books_for_children(self):
+    def test_get_books_for_children_fantasy(self):
+        """Фантастика — подходит для детей"""
         collector = BooksCollector()
         collector.add_new_book('Гарри Поттер')
-        collector.add_new_book('Шерлок Холмс')
-        collector.add_new_book('Мулан')
         collector.set_book_genre('Гарри Поттер', 'Фантастика')
-        collector.set_book_genre('Шерлок Холмс', 'Детективы')
-        collector.set_book_genre('Мулан', 'Мультфильмы')
-        children_books = collector.get_books_for_children()
-        assert 'Гарри Поттер' in children_books
-        assert 'Мулан' in children_books
-        assert 'Шерлок Холмс' not in children_books
+        assert 'Гарри Поттер' in collector.get_books_for_children()
 
-    def test_favorites(self):
+    def test_get_books_for_children_animation(self):
+        """Мультфильмы — подходят для детей"""
+        collector = BooksCollector()
+        collector.add_new_book('Мулан')
+        collector.set_book_genre('Мулан', 'Мультфильмы')
+        assert 'Мулан' in collector.get_books_for_children()
+
+    def test_get_books_for_children_detective_excluded(self):
+        """Детективы — НЕ подходят для детей"""
+        collector = BooksCollector()
+        collector.add_new_book('Шерлок Холмс')
+        collector.set_book_genre('Шерлок Холмс', 'Детективы')
+        assert 'Шерлок Холмс' not in collector.get_books_for_children()
+
+    def test_add_book_in_favorites(self):
+        """Добавление книги в избранное"""
         collector = BooksCollector()
         collector.add_new_book('Гарри Поттер')
         collector.add_book_in_favorites('Гарри Поттер')
         assert collector.get_list_of_favorites_books() == ['Гарри Поттер']
+
+    def test_add_book_in_favorites_no_duplicate(self):
+        """Запрет дублирования в избранном"""
+        collector = BooksCollector()
+        collector.add_new_book('Гарри Поттер')
+        collector.add_book_in_favorites('Гарри Поттер')
+        collector.add_book_in_favorites('Гарри Поттер')  # повтор
+        assert len(collector.get_list_of_favorites_books()) == 1
+
+    def test_delete_book_from_favorites(self):
+        """Удаление из избранного"""
+        collector = BooksCollector()
+        collector.add_new_book('Гарри Поттер')
+        collector.add_book_in_favorites('Гарри Поттер')
         collector.delete_book_from_favorites('Гарри Поттер')
         assert collector.get_list_of_favorites_books() == []
